@@ -10,11 +10,11 @@ use Doctrine\Persistence\ObjectManager;
 use function get_class;
 use SoureCode\Bundle\Token\Exception\LogicException;
 use SoureCode\Bundle\Token\Exception\RuntimeException;
+use SoureCode\Bundle\Token\Generator\UniqueTokenGeneratorInterface;
+use SoureCode\Bundle\Token\Model\Token;
+use SoureCode\Bundle\Token\Model\TokenInterface;
 use SoureCode\Bundle\Token\Repository\TokenRepository;
 use SoureCode\Component\Common\Model\ResourceInterface;
-use SoureCode\Component\Token\Generator\UniqueTokenGeneratorInterface;
-use SoureCode\Component\Token\Model\Token;
-use SoureCode\Component\Token\Model\TokenInterface;
 
 class TokenService implements TokenServiceInterface
 {

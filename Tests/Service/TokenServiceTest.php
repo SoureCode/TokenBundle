@@ -7,10 +7,10 @@ use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use SoureCode\Bundle\Token\Exception\LogicException;
 use SoureCode\Bundle\Token\Exception\RuntimeException;
+use SoureCode\Bundle\Token\Model\Token;
 use SoureCode\Bundle\Token\Service\TokenServiceInterface;
 use SoureCode\Bundle\Token\Tests\AbstractTokenTestCase;
 use SoureCode\Bundle\Token\Tests\Mock\Entity\ResourceMock;
-use SoureCode\Component\Token\Model\Token;
 use function strlen;
 
 class TokenServiceTest extends AbstractTokenTestCase

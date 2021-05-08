@@ -68,7 +68,7 @@ abstract class AbstractTokenTestCase extends AbstractKernelTestCase
     {
         return [
             'SoureCodeTokenBundle' => [
-                'prefix' => 'SoureCode\Component\Token\Model',
+                'prefix' => 'SoureCode\Bundle\Token\Model',
                 'type' => 'xml',
             ],
             'SoureCodeTokenTest' => [

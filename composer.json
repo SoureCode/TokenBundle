@@ -24,7 +24,6 @@
     },
     "require": {
         "php": ">=8.0",
-        "sourecode/token-component": "^0.1",
         "sourecode/common-bundle": "^0.1 !=0.1.0",
         "symfony/http-kernel": "^5.2",
         "symfony/dependency-injection": "^5.2",

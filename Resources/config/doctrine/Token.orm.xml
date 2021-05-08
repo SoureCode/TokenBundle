@@ -4,7 +4,7 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                           https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="SoureCode\Component\Token\Model\Token" table="token">
+    <entity name="SoureCode\Bundle\Token\Model\Token" table="token">
         <id name="id" type="integer">
             <generator strategy="AUTO"/>
         </id>
