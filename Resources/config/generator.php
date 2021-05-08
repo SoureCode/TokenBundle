@@ -1,11 +1,11 @@
 <?php
 
-use SoureCode\Component\Token\Checker\TokenUniqueChecker;
-use SoureCode\Component\Token\Checker\TokenUniqueCheckerInterface;
-use SoureCode\Component\Token\Generator\TokenGenerator;
-use SoureCode\Component\Token\Generator\TokenGeneratorInterface;
-use SoureCode\Component\Token\Generator\UniqueTokenGenerator;
-use SoureCode\Component\Token\Generator\UniqueTokenGeneratorInterface;
+use SoureCode\Bundle\Token\Checker\TokenUniqueChecker;
+use SoureCode\Bundle\Token\Checker\TokenUniqueCheckerInterface;
+use SoureCode\Bundle\Token\Generator\TokenGenerator;
+use SoureCode\Bundle\Token\Generator\TokenGeneratorInterface;
+use SoureCode\Bundle\Token\Generator\UniqueTokenGenerator;
+use SoureCode\Bundle\Token\Generator\UniqueTokenGeneratorInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 

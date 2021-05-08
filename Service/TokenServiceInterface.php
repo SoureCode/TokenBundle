@@ -4,8 +4,8 @@ namespace SoureCode\Bundle\Token\Service;
 
 use DateInterval;
 use DateTime;
+use SoureCode\Bundle\Token\Model\TokenInterface;
 use SoureCode\Component\Common\Model\ResourceInterface;
-use SoureCode\Component\Token\Model\TokenInterface;
 
 interface TokenServiceInterface
 {

@@ -4,7 +4,7 @@ namespace SoureCode\Bundle\Token\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use SoureCode\Component\Token\Model\Token;
+use SoureCode\Bundle\Token\Model\Token;
 
 /**
  * @extends ServiceEntityRepository<Token>
