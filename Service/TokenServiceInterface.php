@@ -4,20 +4,20 @@ namespace SoureCode\Bundle\Token\Service;
 
 use DateInterval;
 use DateTime;
+use SoureCode\Bundle\Token\Model\TokenAwareInterface;
 use SoureCode\Bundle\Token\Model\TokenInterface;
-use SoureCode\Component\Common\Model\ResourceInterface;
 
 interface TokenServiceInterface
 {
-    public function create(ResourceInterface $resource, string $type): TokenInterface;
+    public function create(TokenAwareInterface $resource, string $type): TokenInterface;
 
     public function save(TokenInterface $token): void;
 
     public function remove(TokenInterface $token): void;
 
-    public function findByResourceAndType(ResourceInterface $resource, string $type): ?TokenInterface;
+    public function findByResourceAndType(TokenAwareInterface $resource, string $type): ?TokenInterface;
 
-    public function findByValue(string $value): ?TokenInterface;
+    public function find(string $id): ?TokenInterface;
 
     public function isExpired(TokenInterface $token): bool;
 

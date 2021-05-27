@@ -18,7 +18,6 @@ return function (ContainerConfigurator $container) {
             [
                 service('sourecode.token.object_manager'),
                 service('sourecode.token.repository.token'),
-                service('sourecode.token.generator.unique_token'),
                 param('sourecode.token.config.tokens'),
             ]
         )

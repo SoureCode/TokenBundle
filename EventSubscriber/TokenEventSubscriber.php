@@ -7,8 +7,8 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\ObjectManager;
 use function get_class;
+use SoureCode\Bundle\Token\Model\TokenAwareInterface;
 use SoureCode\Bundle\Token\Repository\TokenRepository;
-use SoureCode\Component\Common\Model\ResourceInterface;
 
 class TokenEventSubscriber implements EventSubscriber
 {
@@ -26,11 +26,11 @@ class TokenEventSubscriber implements EventSubscriber
     {
         $entity = $event->getEntity();
 
-        if ($entity instanceof ResourceInterface) {
+        if ($entity instanceof TokenAwareInterface) {
             $tokens = $this->repository->findBy(
                 [
                     'resourceType' => get_class($entity),
-                    'resourceId' => $entity->getId(),
+                    'resourceId' => $entity->getObjectIdentifier(),
                 ]
             );
 

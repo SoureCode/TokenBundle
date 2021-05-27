@@ -10,7 +10,6 @@
         <directory name="."/>
         <ignoreFiles>
             <directory name=".github"/>
-            <directory name=".run"/>
             <directory name="Tests"/>
             <directory name="vendor"/>
         </ignoreFiles>

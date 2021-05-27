@@ -35,7 +35,6 @@ class SoureCodeTokenExtension extends Extension
 
         $loader->load('event_subscriber.php');
         $loader->load('services.php');
-        $loader->load('generator.php');
     }
 
     private function populateConfiguration(ContainerBuilder $container, array $config): void

@@ -6,7 +6,7 @@ $finder = PhpCsFixer\Finder::create()
             '.',
         ]
     )
-    ->exclude(['vendor', '.github', '.run'])
+    ->exclude(['vendor', '.github'])
     ->name('*.php')
 ;
 

@@ -1,18 +1,18 @@
 <?php
 
-namespace SoureCode\Bundle\Token\Model;
+namespace SoureCode\Bundle\Token\Domain;
 
-use SoureCode\Component\Common\Model\TimestampableTrait;
+use SoureCode\Bundle\Token\Model\TokenInterface;
+use SoureCode\Component\Common\Domain\CreatedAtTrait;
+use Symfony\Component\Uid\UuidV4;
 
 class Token implements TokenInterface
 {
-    use TimestampableTrait;
+    use CreatedAtTrait;
 
-    protected ?int $id = null;
+    protected ?UuidV4 $id = null;
 
     protected ?string $type = null;
-
-    protected ?string $value = null;
 
     protected ?string $data = null;
 
@@ -20,7 +20,7 @@ class Token implements TokenInterface
 
     protected ?int $resourceId = null;
 
-    public function getId(): ?int
+    public function getId(): ?UuidV4
     {
         return $this->id;
     }
@@ -33,16 +33,6 @@ class Token implements TokenInterface
     public function setType(?string $type): void
     {
         $this->type = $type;
-    }
-
-    public function getValue(): ?string
-    {
-        return $this->value;
-    }
-
-    public function setValue(?string $value): void
-    {
-        $this->value = $value;
     }
 
     public function getData(): ?string
@@ -70,7 +60,10 @@ class Token implements TokenInterface
         return $this->resourceId;
     }
 
-    public function setResourceId(?int $id): void
+    /**
+     * {@inheritDoc}
+     */
+    public function setResourceId($id): void
     {
         $this->resourceId = $id;
     }

@@ -2,49 +2,44 @@
 
 namespace SoureCode\Bundle\Token\Tests\EventSubscriber;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
-use SoureCode\Bundle\Token\Repository\TokenRepository;
-use SoureCode\Bundle\Token\Service\TokenServiceInterface;
-use SoureCode\Bundle\Token\Tests\AbstractTokenTestCase;
-use SoureCode\Bundle\Token\Tests\Mock\Entity\ResourceMock;
+use SoureCode\Bundle\Token\Tests\AbstractTokenBundleTestCase;
+use SoureCode\Bundle\Token\Tests\App\Entity\FooResource;
 
-class TokenEventSubscriberTest extends AbstractTokenTestCase
+class TokenEventSubscriberTest extends AbstractTokenBundleTestCase
 {
-    public function testFindByResourceAndType(): void
+    public function testTokenDeletionOnResourceDeletion(): void
     {
-        $container = static::bootKernel()->getContainer();
-
         // Arrange
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        /**
-         * @var TokenRepository $repository
-         */
-        $repository = $container->get(TokenRepository::class);
-        /**
-         * @var Registry $doctrine
-         */
-        $doctrine = $container->get('doctrine');
-        $manager = $doctrine->getManager();
-        $resourceRepository = $manager->getRepository(ResourceMock::class);
-        $mock = new ResourceMock();
-        $service->create($mock, 'test');
-        $id = $mock->getId();
+        $service = $this->getService();
+        $repository = $this->getRepository();
+        $entityManager = $this->getEntityManager();
 
-        $manager->clear();
+        $fooRepository = $entityManager->getRepository(FooResource::class);
 
-        $resource = $resourceRepository->find($id);
+        $resource = new FooResource();
+        $entityManager->persist($resource);
+        $entityManager->flush();
 
-        self::assertNotNull($resource);
+        $service->create($resource, 'test');
+
+        // Assert
+        self::assertCount(1, $repository->findAll());
+        self::assertCount(1, $fooRepository->findAll());
+
+        $id = $resource->getId();
+
+        $entityManager->clear();
+
+        $foundResource = $fooRepository->find($id);
+
+        self::assertNotNull($foundResource);
 
         // Act
-        $manager->remove($resource);
-        $manager->flush();
+        $entityManager->remove($foundResource);
+        $entityManager->flush();
 
         // Assert
         self::assertCount(0, $repository->findAll());
-        self::assertCount(0, $resourceRepository->findAll());
+        self::assertCount(0, $fooRepository->findAll());
     }
 }

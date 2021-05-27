@@ -1,14 +1,14 @@
 <?php
 
-namespace SoureCode\Bundle\Token\Tests\Mock\Entity;
+namespace SoureCode\Bundle\Token\Tests\App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use SoureCode\Component\Common\Model\ResourceInterface;
+use SoureCode\Bundle\Token\Model\TokenAwareInterface;
 
 /**
  * @ORM\Entity()
  */
-class ResourceMock implements ResourceInterface
+class FooResource implements TokenAwareInterface
 {
     /**
      * @ORM\Id()
@@ -25,5 +25,10 @@ class ResourceMock implements ResourceInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getObjectIdentifier(): string
+    {
+        return (string) $this->id;
     }
 }

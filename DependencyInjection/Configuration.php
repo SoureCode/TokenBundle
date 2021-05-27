@@ -66,7 +66,7 @@ class Configuration implements ConfigurationInterface
         $tokenNode
             ->children()
                 ->scalarNode('length')
-                ->isRequired()
+                ->setDeprecated('SoureCode/TokenBundle', '0.2.0', 'Setting a length is deprecated since 0.2.0 and will be removed in 1.0.0')
                 ->validate()
                 ->ifTrue(function (int $value) {
                     return $value < 4;

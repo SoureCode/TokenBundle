@@ -5,19 +5,19 @@ namespace SoureCode\Bundle\Token\Tests\Service;
 use DateInterval;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Registry;
-use SoureCode\Bundle\Token\Exception\LogicException;
+use SoureCode\Bundle\Token\Domain\Token;
+use SoureCode\Bundle\Token\Exception\InvalidArgumentException;
 use SoureCode\Bundle\Token\Exception\RuntimeException;
-use SoureCode\Bundle\Token\Model\Token;
 use SoureCode\Bundle\Token\Service\TokenServiceInterface;
-use SoureCode\Bundle\Token\Tests\AbstractTokenTestCase;
-use SoureCode\Bundle\Token\Tests\Mock\Entity\ResourceMock;
-use function strlen;
+use SoureCode\Bundle\Token\Tests\AbstractTokenBundleTestCase;
+use SoureCode\Bundle\Token\Tests\App\Entity\FooResource;
+use Symfony\Component\Uid\UuidV4;
 
-class TokenServiceTest extends AbstractTokenTestCase
+class TokenServiceTest extends AbstractTokenBundleTestCase
 {
     public function testTokenServiceRegistered(): void
     {
-        $container = static::bootKernel()->getContainer();
+        $container = $this->getContainer();
 
         // Arrange and Act and Assert
         self::assertTrue($container->has('sourecode.token.service.token'), 'It should be registered by key');
@@ -27,19 +27,14 @@ class TokenServiceTest extends AbstractTokenTestCase
     public function testCreateWithPersistentResource(): void
     {
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        $persistentResource = new ResourceMock();
+        $service = $this->getService();
+        $persistentResource = new FooResource();
         /**
          * @var Registry $doctrine
          */
-        $doctrine = $container->get('doctrine');
-        $manager = $doctrine->getManager();
-        $manager->persist($persistentResource);
-        $manager->flush();
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($persistentResource);
+        $entityManager->flush();
 
         self::assertIsNumeric($persistentResource->getId());
 
@@ -47,95 +42,21 @@ class TokenServiceTest extends AbstractTokenTestCase
         $actual = $service->create($persistentResource, 'foo');
 
         // Assert
-        self::assertIsNumeric($actual->getId());
-        self::assertIsString($actual->getValue());
-        self::assertSame(6, strlen($actual->getValue() ?? ''));
-        self::assertSame(ResourceMock::class, $actual->getResourceType());
+        self::assertInstanceOf(UuidV4::class, $actual->getId());
+        self::assertSame(FooResource::class, $actual->getResourceType());
         self::assertSame($persistentResource->getId(), $actual->getResourceId());
     }
 
     public function testCreateWithNotPersistentResource(): void
     {
+        $this->expectException(InvalidArgumentException::class);
+
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        $notPersistentResource = new ResourceMock();
+        $service = $this->getService();
+        $notPersistentResource = new FooResource();
 
         // Act
-        $actual = $service->create($notPersistentResource, 'bar');
-
-        // Assert
-        self::assertIsNumeric($actual->getId());
-        self::assertIsString($actual->getValue());
-        self::assertSame(10, strlen($actual->getValue() ?? ''));
-        self::assertSame(ResourceMock::class, $actual->getResourceType());
-        self::assertSame($notPersistentResource->getId(), $actual->getResourceId());
-    }
-
-    public function testFindByValue(): void
-    {
-        // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        /**
-         * @var Registry $doctrine
-         */
-        $doctrine = $container->get('doctrine');
-        $manager = $doctrine->getManager();
-        $resource = new ResourceMock();
-        $token = $service->create($resource, 'foo');
-
-        $manager->clear();
-        $value = $token->getValue();
-
-        self::assertNotNull($value);
-
-        // Act
-        $actual = $service->findByValue($value);
-
-        // Assert
-        self::assertNotNull($actual);
-        self::assertSame($token->getId(), $actual->getId());
-        self::assertSame($token->getType(), $actual->getType());
-        self::assertSame($token->getValue(), $actual->getValue());
-        self::assertSame($token->getResourceType(), $actual->getResourceType());
-        self::assertSame($token->getResourceId(), $actual->getResourceId());
-    }
-
-    public function testFindByResourceAndType(): void
-    {
-        // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        /**
-         * @var Registry $doctrine
-         */
-        $doctrine = $container->get('doctrine');
-        $manager = $doctrine->getManager();
-        $resource = new ResourceMock();
-        $token = $service->create($resource, 'bar');
-
-        $manager->clear();
-
-        // Act
-        $actual = $service->findByResourceAndType($resource, 'bar');
-
-        // Assert
-        self::assertNotNull($actual);
-        self::assertSame($token->getId(), $actual->getId());
-        self::assertSame($token->getType(), $actual->getType());
-        self::assertSame($token->getValue(), $actual->getValue());
-        self::assertSame($token->getResourceType(), $actual->getResourceType());
-        self::assertSame($token->getResourceId(), $actual->getResourceId());
+        $service->create($notPersistentResource, 'bar');
     }
 
     public function testGetMissingTokenConfiguration(): void
@@ -144,12 +65,8 @@ class TokenServiceTest extends AbstractTokenTestCase
         $this->expectException(RuntimeException::class);
 
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        $resource = new ResourceMock();
+        $service = $this->getService();
+        $resource = new FooResource();
 
         // Act
         $service->create($resource, 'baz');
@@ -158,18 +75,10 @@ class TokenServiceTest extends AbstractTokenTestCase
     public function testSaveAndRemove(): void
     {
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
-        /**
-         * @var Registry $doctrine
-         */
-        $doctrine = $container->get('doctrine');
-        $manager = $doctrine->getManager();
+        $service = $this->getService();
+        $entityManager = $this->getEntityManager();
+
         $token = new Token();
-        $token->setValue('foo');
         $token->setType('bar');
         $token->setResourceType('a');
         $token->setResourceId(1);
@@ -178,29 +87,27 @@ class TokenServiceTest extends AbstractTokenTestCase
         $service->save($token);
 
         // Assert
-        self::assertTrue($manager->contains($token));
+        self::assertTrue($entityManager->contains($token));
         self::assertNotNull($token->getId());
         self::assertNotNull($token->getCreatedAt());
+
+        $id = $token->getId();
 
         // Act
         $service->remove($token);
 
         // Assert
-        self::assertFalse($manager->contains($token));
-        self::assertNull($service->findByValue('foo'));
+        self::assertFalse($entityManager->contains($token));
+        self::assertNull($service->find($id->toBase58()));
     }
 
     public function testValidateNull(): void
     {
         // Assert
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
+        $service = $this->getService();
 
         // Act
         $service->validate(null);
@@ -212,11 +119,7 @@ class TokenServiceTest extends AbstractTokenTestCase
         $this->expectException(RuntimeException::class);
 
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
+        $service = $this->getService();
 
         // Act
         $date = new DateTime();
@@ -229,11 +132,7 @@ class TokenServiceTest extends AbstractTokenTestCase
     public function testValidateValid(): void
     {
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
+        $service = $this->getService();
 
         // Act
         $date = new DateTime();
@@ -248,14 +147,10 @@ class TokenServiceTest extends AbstractTokenTestCase
     public function testGetExpiresAtNotPersisted(): void
     {
         // Assert
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
+        $service = $this->getService();
 
         // Act
         $token = new Token();
@@ -267,18 +162,35 @@ class TokenServiceTest extends AbstractTokenTestCase
     public function testGetExpirationIntervalInvalidType(): void
     {
         // Assert
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         // Arrange
-        $container = static::bootKernel()->getContainer();
-        /**
-         * @var TokenServiceInterface $service
-         */
-        $service = $container->get(TokenServiceInterface::class);
+        $service = $this->getService();
 
         // Act
         $token = new Token();
 
         $service->getExpirationInterval($token);
+    }
+
+    public function testFindByResourceAndType(): void
+    {
+        // Arrange
+        $service = $this->getService();
+        $entityManager = $this->getEntityManager();
+
+        $resource = new FooResource();
+        $entityManager->persist($resource);
+        $entityManager->flush();
+
+        $service->create($resource, 'bar');
+
+        $entityManager->clear();
+
+        // Act
+        $actual = $service->findByResourceAndType($resource, 'bar');
+
+        // Assert
+        self::assertNotNull($actual);
     }
 }

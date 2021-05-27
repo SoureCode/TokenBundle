@@ -2,25 +2,24 @@
 
 namespace SoureCode\Bundle\Token\Service;
 
+use SoureCode\Bundle\Token\Exception\InvalidArgumentException;
 use function array_key_exists;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Persistence\ObjectManager;
 use function get_class;
+use SoureCode\Bundle\Token\Domain\Token;
 use SoureCode\Bundle\Token\Exception\LogicException;
 use SoureCode\Bundle\Token\Exception\RuntimeException;
-use SoureCode\Bundle\Token\Generator\UniqueTokenGeneratorInterface;
-use SoureCode\Bundle\Token\Model\Token;
+use SoureCode\Bundle\Token\Model\TokenAwareInterface;
 use SoureCode\Bundle\Token\Model\TokenInterface;
 use SoureCode\Bundle\Token\Repository\TokenRepository;
-use SoureCode\Component\Common\Model\ResourceInterface;
+use Symfony\Component\Uid\UuidV4;
 
 class TokenService implements TokenServiceInterface
 {
     protected TokenRepository $repository;
-
-    protected UniqueTokenGeneratorInterface $generator;
 
     protected ObjectManager $manager;
 
@@ -29,29 +28,28 @@ class TokenService implements TokenServiceInterface
     public function __construct(
         ObjectManager $manager,
         TokenRepository $repository,
-        UniqueTokenGeneratorInterface $generator,
         array $tokenConfiguration,
     ) {
         $this->repository = $repository;
-        $this->generator = $generator;
         $this->manager = $manager;
         $this->tokenConfiguration = $tokenConfiguration;
     }
 
-    public function create(ResourceInterface $resource, string $type): TokenInterface
+    public function create(TokenAwareInterface $resource, string $type): TokenInterface
     {
-        $config = $this->getTokenConfiguration($type);
-        $value = $this->generator->generate($config['length']);
+        // Ensure this token type is configured
+        $this->getTokenConfiguration($type);
 
-        if (!$this->manager->contains($resource)) {
-            $this->manager->persist($resource);
+        $resourceId = $resource->getObjectIdentifier();
+
+        if (!$resourceId) {
+            throw new InvalidArgumentException('Resource is not persisted.');
         }
 
         $token = new Token();
         $token->setType($type);
-        $token->setValue($value);
         $token->setResourceType(get_class($resource));
-        $token->setResourceId($resource->getId());
+        $token->setResourceId($resourceId);
 
         $this->manager->persist($token);
         $this->manager->flush();
@@ -59,33 +57,13 @@ class TokenService implements TokenServiceInterface
         return $token;
     }
 
-    protected function getTokenConfiguration(string $type): array
+    public function getTokenConfiguration(string $type): array
     {
         if (!array_key_exists($type, $this->tokenConfiguration)) {
             throw new RuntimeException(sprintf('Missing token configuration for type "%s"', $type));
         }
 
         return $this->tokenConfiguration[$type];
-    }
-
-    public function findByResourceAndType(ResourceInterface $resource, string $type): ?TokenInterface
-    {
-        $queryBuilder = $this->repository->createQueryBuilder('t')
-            ->where('t.resourceType = :resourceType')
-            ->andWhere('t.resourceId = :resourceId')
-            ->andWhere('t.type = :type')
-            ->setParameter('resourceType', get_class($resource))
-            ->setParameter('resourceId', $resource->getId())
-            ->setParameter('type', $type);
-
-        $query = $queryBuilder->getQuery();
-
-        return $query->getOneOrNullResult();
-    }
-
-    public function findByValue(string $value): ?TokenInterface
-    {
-        return $this->repository->findOneBy(['value' => $value]);
     }
 
     public function save(TokenInterface $token): void
@@ -103,7 +81,7 @@ class TokenService implements TokenServiceInterface
     public function validate(?TokenInterface $token): void
     {
         if (null === $token) {
-            throw new RuntimeException('Token not found.');
+            throw new InvalidArgumentException('Token is null.');
         }
 
         if ($this->isExpired($token)) {
@@ -124,7 +102,7 @@ class TokenService implements TokenServiceInterface
         $createdAt = $token->getCreatedAt();
 
         if (null === $createdAt) {
-            throw new LogicException('CreatedAt timestamp missing for token, might be not persisted yet.');
+            throw new InvalidArgumentException('CreatedAt timestamp missing for token, might be not persisted yet.');
         }
 
         $interval = $this->getExpirationInterval($token);
@@ -145,11 +123,23 @@ class TokenService implements TokenServiceInterface
         $type = $token->getType();
 
         if (null === $type) {
-            throw new LogicException('Invalid token type.');
+            throw new InvalidArgumentException('Invalid token type.');
         }
 
         $config = $this->getTokenConfiguration($type);
 
         return new DateInterval($config['expiration']);
+    }
+
+    public function findByResourceAndType(TokenAwareInterface $resource, string $type): ?TokenInterface
+    {
+        return $this->repository->findByResourceAndType($resource, $type);
+    }
+
+    public function find(string $id): ?TokenInterface
+    {
+        $uuid = UuidV4::fromString($id);
+
+        return $this->repository->find($uuid);
     }
 }

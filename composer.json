@@ -24,28 +24,31 @@
     },
     "require": {
         "php": ">=8.0",
-        "sourecode/common-bundle": "^0.1 !=0.1.0",
         "symfony/http-kernel": "^5.2",
         "symfony/dependency-injection": "^5.2",
         "symfony/config": "^5.2",
         "symfony/doctrine-bridge": "5.2.3",
         "doctrine/orm": "^2.8",
         "doctrine/dbal": "^2.12",
-        "doctrine/migrations": "^3.1",
         "doctrine/doctrine-bundle": "^2.2",
-        "doctrine/persistence": "^2.1"
+        "doctrine/persistence": "^2.1",
+        "symfony/uid": "^5.2",
+        "sourecode/common-component": "dev-master"
     },
     "require-dev": {
-        "sourecode/bundle-test": "dev-master",
         "friendsofphp/php-cs-fixer": "^2.18",
         "vimeo/psalm": "^4.4",
-        "weirdan/doctrine-psalm-plugin": "^1.0"
+        "weirdan/doctrine-psalm-plugin": "^1.0",
+        "stof/doctrine-extensions-bundle": "^1.6",
+        "phpunit/phpunit": "^9.5",
+        "dama/doctrine-test-bundle": "^6.5",
+        "sourecode/bundle-test": "dev-master"
     },
     "scripts": {
         "psalm": "vendor/bin/psalm --show-info=false --no-cache --output-format=phpstorm",
         "cs-fix": "vendor/bin/php-cs-fixer fix",
         "cs-check": "vendor/bin/php-cs-fixer fix --diff",
-        "test": "vendor/bin/simple-phpunit"
+        "test": "vendor/bin/phpunit"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

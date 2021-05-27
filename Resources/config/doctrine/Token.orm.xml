@@ -4,20 +4,17 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                           https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="SoureCode\Bundle\Token\Model\Token" table="token">
-        <id name="id" type="integer">
-            <generator strategy="AUTO"/>
+    <entity name="SoureCode\Bundle\Token\Domain\Token" table="token">
+        <id name="id" type="uuid">
+            <generator strategy="CUSTOM"/>
+            <custom-id-generator class="Symfony\Bridge\Doctrine\IdGenerator\UuidV4Generator"/>
         </id>
         <field name="type" type="string"/>
-        <field name="value" type="string"/>
         <field name="data" type="string" nullable="true"/>
         <field name="resourceType" type="string"/>
-        <field name="resourceId" type="integer"/>
+        <field name="resourceId" type="string"/>
         <field name="createdAt" type="datetimetz">
             <gedmo:timestampable on="create"/>
-        </field>
-        <field name="updatedAt" type="datetimetz">
-            <gedmo:timestampable on="update"/>
         </field>
     </entity>
 </doctrine-mapping>

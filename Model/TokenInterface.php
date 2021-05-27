@@ -2,19 +2,16 @@
 
 namespace SoureCode\Bundle\Token\Model;
 
-use SoureCode\Component\Common\Model\TimestampableInterface;
+use SoureCode\Component\Common\Model\CreatedAtInterface;
+use Symfony\Component\Uid\UuidV4;
 
-interface TokenInterface extends TimestampableInterface
+interface TokenInterface extends CreatedAtInterface
 {
-    public function getId(): ?int;
+    public function getId(): ?UuidV4;
 
     public function getType(): ?string;
 
     public function setType(?string $type): void;
-
-    public function getValue(): ?string;
-
-    public function setValue(?string $value): void;
 
     public function getData(): ?string;
 
@@ -26,5 +23,8 @@ interface TokenInterface extends TimestampableInterface
 
     public function getResourceId(): ?int;
 
-    public function setResourceId(?int $id): void;
+    /**
+     * @param mixed|null $id
+     */
+    public function setResourceId($id): void;
 }

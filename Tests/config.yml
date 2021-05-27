@@ -1,0 +1,35 @@
+soure_code_token:
+    tokens:
+        foo:
+            expiration: PT1H
+        bar:
+            expiration: PT4H
+        test:
+            expiration: PT4H
+
+stof_doctrine_extensions:
+    default_locale: en_US
+    orm:
+        default:
+            timestampable: true
+
+doctrine:
+    dbal:
+        override_url: true
+        url: '%env(DATABASE_URL)%'
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: 'doctrine.orm.naming_strategy.underscore_number_aware'
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: annotation
+                dir: '%kernel.project_dir%/Tests/App/Entity'
+                prefix: 'SoureCode\Bundle\Token\Tests\App\Entity'
+                alias: App
+            SoureCodeTokenBundle:
+                type: xml
+                prefix: 'SoureCode\Bundle\Token\Domain'
+
+dama_doctrine_test:
