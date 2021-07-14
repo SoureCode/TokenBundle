@@ -3,19 +3,19 @@
 namespace SoureCode\Bundle\Token\Tests\App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use SoureCode\Bundle\Token\Model\TokenAwareInterface;
+use SoureCode\Bundle\Token\Domain\Token;
+use SoureCode\Bundle\Token\Model\TokenInterface;
 
-/**
- * @ORM\Entity()
- */
-class FooResource implements TokenAwareInterface
+#[ORM\Entity]
+class FooResource
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    protected ?int $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    protected ?int $id = null;
+
+    #[ORM\OneToOne(targetEntity: Token::class, cascade: ['persist'], orphanRemoval: true)]
+    protected ?TokenInterface $activationToken = null;
 
     public function __construct(?int $id = null)
     {
@@ -27,8 +27,15 @@ class FooResource implements TokenAwareInterface
         return $this->id;
     }
 
-    public function getObjectIdentifier(): string
+    public function getActivationToken(): ?TokenInterface
     {
-        return (string) $this->id;
+        return $this->activationToken;
+    }
+
+    public function setActivationToken(?TokenInterface $activationToken): self
+    {
+        $this->activationToken = $activationToken;
+
+        return $this;
     }
 }

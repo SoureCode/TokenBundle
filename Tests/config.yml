@@ -1,3 +1,4 @@
+
 soure_code_token:
     tokens:
         foo:
@@ -24,7 +25,7 @@ doctrine:
         mappings:
             App:
                 is_bundle: false
-                type: annotation
+                type: attribute
                 dir: '%kernel.project_dir%/Tests/App/Entity'
                 prefix: 'SoureCode\Bundle\Token\Tests\App\Entity'
                 alias: App

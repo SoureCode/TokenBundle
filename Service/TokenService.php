@@ -2,20 +2,18 @@
 
 namespace SoureCode\Bundle\Token\Service;
 
-use SoureCode\Bundle\Token\Exception\InvalidArgumentException;
 use function array_key_exists;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Persistence\ObjectManager;
-use function get_class;
+use function is_string;
 use SoureCode\Bundle\Token\Domain\Token;
-use SoureCode\Bundle\Token\Exception\LogicException;
+use SoureCode\Bundle\Token\Exception\InvalidArgumentException;
 use SoureCode\Bundle\Token\Exception\RuntimeException;
-use SoureCode\Bundle\Token\Model\TokenAwareInterface;
 use SoureCode\Bundle\Token\Model\TokenInterface;
 use SoureCode\Bundle\Token\Repository\TokenRepository;
-use Symfony\Component\Uid\UuidV4;
+use Symfony\Component\Uid\Uuid;
 
 class TokenService implements TokenServiceInterface
 {
@@ -35,24 +33,14 @@ class TokenService implements TokenServiceInterface
         $this->tokenConfiguration = $tokenConfiguration;
     }
 
-    public function create(TokenAwareInterface $resource, string $type): TokenInterface
+    public function create(string $type, ?string $data = null): TokenInterface
     {
         // Ensure this token type is configured
         $this->getTokenConfiguration($type);
 
-        $resourceId = $resource->getObjectIdentifier();
-
-        if (!$resourceId) {
-            throw new InvalidArgumentException('Resource is not persisted.');
-        }
-
         $token = new Token();
         $token->setType($type);
-        $token->setResourceType(get_class($resource));
-        $token->setResourceId($resourceId);
-
-        $this->manager->persist($token);
-        $this->manager->flush();
+        $token->setData($data);
 
         return $token;
     }
@@ -131,15 +119,17 @@ class TokenService implements TokenServiceInterface
         return new DateInterval($config['expiration']);
     }
 
-    public function findByResourceAndType(TokenAwareInterface $resource, string $type): ?TokenInterface
+    public function find(string | Uuid $id): ?TokenInterface
     {
-        return $this->repository->findByResourceAndType($resource, $type);
+        if (is_string($id)) {
+            $id = Uuid::fromString($id);
+        }
+
+        return $this->repository->find($id);
     }
 
-    public function find(string $id): ?TokenInterface
+    public function getRepository(): TokenRepository
     {
-        $uuid = UuidV4::fromString($id);
-
-        return $this->repository->find($uuid);
+        return $this->repository;
     }
 }

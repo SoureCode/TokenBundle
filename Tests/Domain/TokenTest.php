@@ -47,26 +47,4 @@ class TokenTest extends TestCase
         $token->setData('bar');
         self::assertSame('bar', $token->getData());
     }
-
-    public function testGetSetResourceType(): void
-    {
-        // Arrange
-        $token = new Token();
-
-        // Act and Assert
-        self::assertNull($token->getResourceType());
-        $token->setResourceType('foo');
-        self::assertSame('foo', $token->getResourceType());
-    }
-
-    public function testGetSetResourceId(): void
-    {
-        // Arrange
-        $token = new Token();
-
-        // Act and Assert
-        self::assertNull($token->getResourceId());
-        $token->setResourceId(5);
-        self::assertSame(5, $token->getResourceId());
-    }
 }

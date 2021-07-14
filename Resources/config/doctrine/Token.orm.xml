@@ -7,12 +7,10 @@
     <entity name="SoureCode\Bundle\Token\Domain\Token" table="token">
         <id name="id" type="uuid">
             <generator strategy="CUSTOM"/>
-            <custom-id-generator class="Symfony\Bridge\Doctrine\IdGenerator\UuidV4Generator"/>
+            <custom-id-generator class="\Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator"/>
         </id>
         <field name="type" type="string"/>
         <field name="data" type="string" nullable="true"/>
-        <field name="resourceType" type="string"/>
-        <field name="resourceId" type="string"/>
         <field name="createdAt" type="datetimetz">
             <gedmo:timestampable on="create"/>
         </field>

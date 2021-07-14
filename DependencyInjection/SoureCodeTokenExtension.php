@@ -33,7 +33,6 @@ class SoureCodeTokenExtension extends Extension
             ]
         );
 
-        $loader->load('event_subscriber.php');
         $loader->load('services.php');
     }
 

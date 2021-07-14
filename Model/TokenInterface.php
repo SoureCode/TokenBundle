@@ -3,11 +3,11 @@
 namespace SoureCode\Bundle\Token\Model;
 
 use SoureCode\Component\Common\Model\CreatedAtInterface;
-use Symfony\Component\Uid\UuidV4;
+use Symfony\Component\Uid\Uuid;
 
 interface TokenInterface extends CreatedAtInterface
 {
-    public function getId(): ?UuidV4;
+    public function getId(): ?Uuid;
 
     public function getType(): ?string;
 
@@ -16,15 +16,4 @@ interface TokenInterface extends CreatedAtInterface
     public function getData(): ?string;
 
     public function setData(?string $data): void;
-
-    public function getResourceType(): ?string;
-
-    public function setResourceType(?string $type): void;
-
-    public function getResourceId(): ?int;
-
-    /**
-     * @param mixed|null $id
-     */
-    public function setResourceId($id): void;
 }

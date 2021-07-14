@@ -11,7 +11,7 @@ use SoureCode\Bundle\Token\Exception\RuntimeException;
 use SoureCode\Bundle\Token\Service\TokenServiceInterface;
 use SoureCode\Bundle\Token\Tests\AbstractTokenBundleTestCase;
 use SoureCode\Bundle\Token\Tests\App\Entity\FooResource;
-use Symfony\Component\Uid\UuidV4;
+use Symfony\Component\Uid\UuidV6;
 
 class TokenServiceTest extends AbstractTokenBundleTestCase
 {
@@ -28,35 +28,22 @@ class TokenServiceTest extends AbstractTokenBundleTestCase
     {
         // Arrange
         $service = $this->getService();
-        $persistentResource = new FooResource();
+
+        // Act
+        $resource = new FooResource();
+        $token = $service->create('foo');
+        $resource->setActivationToken($token);
+
         /**
          * @var Registry $doctrine
          */
         $entityManager = $this->getEntityManager();
-        $entityManager->persist($persistentResource);
+        $entityManager->persist($resource);
         $entityManager->flush();
 
-        self::assertIsNumeric($persistentResource->getId());
-
-        // Act
-        $actual = $service->create($persistentResource, 'foo');
-
         // Assert
-        self::assertInstanceOf(UuidV4::class, $actual->getId());
-        self::assertSame(FooResource::class, $actual->getResourceType());
-        self::assertSame($persistentResource->getId(), $actual->getResourceId());
-    }
-
-    public function testCreateWithNotPersistentResource(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        // Arrange
-        $service = $this->getService();
-        $notPersistentResource = new FooResource();
-
-        // Act
-        $service->create($notPersistentResource, 'bar');
+        self::assertIsNumeric($resource->getId());
+        self::assertInstanceOf(UuidV6::class, $token->getId());
     }
 
     public function testGetMissingTokenConfiguration(): void
@@ -69,19 +56,18 @@ class TokenServiceTest extends AbstractTokenBundleTestCase
         $resource = new FooResource();
 
         // Act
-        $service->create($resource, 'baz');
+        $service->create('baz');
     }
 
     public function testSaveAndRemove(): void
     {
         // Arrange
         $service = $this->getService();
+        $repository = $service->getRepository();
         $entityManager = $this->getEntityManager();
 
         $token = new Token();
         $token->setType('bar');
-        $token->setResourceType('a');
-        $token->setResourceId(1);
 
         // Act
         $service->save($token);
@@ -97,8 +83,13 @@ class TokenServiceTest extends AbstractTokenBundleTestCase
         $service->remove($token);
 
         // Assert
+        $entityManager->clear();
+
+        $tokens = $repository->findAll();
+
         self::assertFalse($entityManager->contains($token));
-        self::assertNull($service->find($id->toBase58()));
+        self::assertNull($service->find($id));
+        self::assertCount(0, $tokens);
     }
 
     public function testValidateNull(): void
@@ -173,24 +164,62 @@ class TokenServiceTest extends AbstractTokenBundleTestCase
         $service->getExpirationInterval($token);
     }
 
-    public function testFindByResourceAndType(): void
+    public function testOrphanRemoval(): void
     {
         // Arrange
         $service = $this->getService();
+        $repository = $service->getRepository();
         $entityManager = $this->getEntityManager();
 
+        $token = $service->create('foo');
         $resource = new FooResource();
+
+        $resource->setActivationToken($token);
         $entityManager->persist($resource);
         $entityManager->flush();
-
-        $service->create($resource, 'bar');
-
         $entityManager->clear();
 
+        $resourceRepository = $entityManager->getRepository($resource::class);
+
         // Act
-        $actual = $service->findByResourceAndType($resource, 'bar');
+        $foundResource = $resourceRepository->find($resource->getId());
+        $entityManager->remove($foundResource);
+        $entityManager->flush();
 
         // Assert
-        self::assertNotNull($actual);
+        $tokens = $repository->findAll();
+
+        self::assertCount(0, $tokens);
+    }
+
+    public function testSetNull(): void
+    {
+        // Arrange
+        $service = $this->getService();
+        $repository = $service->getRepository();
+        $entityManager = $this->getEntityManager();
+
+        $token = $service->create('foo');
+        $resource = new FooResource();
+
+        $resource->setActivationToken($token);
+        $entityManager->persist($resource);
+        $entityManager->flush();
+        $entityManager->clear();
+
+        $resourceRepository = $entityManager->getRepository($resource::class);
+
+        // Act
+        /**
+         * @var FooResource $foundResource
+         */
+        $foundResource = $resourceRepository->find($resource->getId());
+        $foundResource->setActivationToken(null);
+        $entityManager->flush();
+
+        // Assert
+        $tokens = $repository->findAll();
+
+        self::assertCount(0, $tokens);
     }
 }
