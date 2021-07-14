@@ -3,6 +3,7 @@
 
 # Dependencies
 vendor/
+composer.lock
 
 # Coverage
 coverage/
